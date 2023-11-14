@@ -49,8 +49,8 @@ public class TransactionService {
                 throw new RuntimeException("O usuário não possui saldo suficiente na conta.");
             }
 
-            if (transaction.getAmount() < 0) {
-                throw new RuntimeException("O valor a ser transferido não pode ser negativo.");
+            if (transaction.getAmount() <= 0) {
+                throw new RuntimeException("O valor a ser transferido não pode ser 0.0 ou negativo.");
             }
 
             user.get().setBalance(user.get().getBalance() - transaction.getAmount());
