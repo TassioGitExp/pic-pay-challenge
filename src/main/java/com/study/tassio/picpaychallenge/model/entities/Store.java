@@ -1,28 +1,32 @@
 package com.study.tassio.picpaychallenge.model.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
-
-import java.util.List;
 
 @Entity
 @Getter
 @Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-@Table(name = "store")
+@Table(name = "store", schema = "public")
 public class Store {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private String id;
+    @Column(name = "store_id")
+    private String storeId;
 
     @Column(unique = true)
     private String cnpj;
 
+    @Column(unique = true)
+    private String email;
+
+    private String password;
     private String name;
     private Double balance;
 
-    @OneToMany(mappedBy = "store")
-    private List<Transaction> transactions;
 }

@@ -6,13 +6,14 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
+@ToString
 @AllArgsConstructor
 @EqualsAndHashCode
 @NoArgsConstructor
-@Table(name = "transaction")
+@Table(name = "transaction", schema = "public")
 public class Transaction {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "transaction_id")
     private String id;
 
     @ManyToOne
@@ -22,6 +23,9 @@ public class Transaction {
     @ManyToOne
     @JoinColumn(name = "store_id")
     private Store store;
+
+    private Double amount;
+
 }
 
 
