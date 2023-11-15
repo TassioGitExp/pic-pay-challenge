@@ -12,3 +12,9 @@ spring:
         cache:
           use_second_level_cache: false
           use_query_cache: false
+
+springdoc:
+  api-docs:
+    path: /documentation
+  swagger-ui:
+    path: /swagger

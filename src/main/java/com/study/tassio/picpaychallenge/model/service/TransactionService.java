@@ -1,14 +1,17 @@
 package com.study.tassio.picpaychallenge.model.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.study.tassio.picpaychallenge.model.dto.request.TransactionRequest;
 import com.study.tassio.picpaychallenge.model.dto.response.TransactionResponse;
-import com.study.tassio.picpaychallenge.model.dto.response.UserResponse;
 import com.study.tassio.picpaychallenge.model.entities.Transaction;
+import com.study.tassio.picpaychallenge.model.entities.TransactionAuthorization;
 import com.study.tassio.picpaychallenge.model.repository.StoreRepository;
 import com.study.tassio.picpaychallenge.model.repository.TransactionRepository;
 import com.study.tassio.picpaychallenge.model.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Objects;
 
@@ -28,7 +31,32 @@ public class TransactionService {
         this.storeRepository = storeRepository;
     }
 
+    public String authorizeTransaction() throws JsonProcessingException {
+        String uri = "https://run.mocky.io/v3/5794d450-d2e2-4412-8131-73d0293ac1cc";
+        RestTemplate restTemplate = new RestTemplate();
+        ObjectMapper mapper = new ObjectMapper();
+
+        var authorizationString = restTemplate.getForObject(uri, String.class);
+
+        TransactionAuthorization authorizationMapped = mapper.readValue(authorizationString, TransactionAuthorization.class);
+
+        return authorizationMapped.getMessage();
+    }
+
     public TransactionResponse makeTransaction(TransactionRequest transactionRequest, String userId){
+        String authorization = "";
+        try {
+            authorization = authorizeTransaction();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (!Objects.equals(authorization, "Autorizado")) {
+            throw new RuntimeException("Transação: " + authorization + ".\nTente novamente mais tarde.");
+        }
+
+        System.out.println(authorization);
+
         var user = userRepository.findById(transactionRequest.getUserId());
         System.out.println(user.toString());
 
