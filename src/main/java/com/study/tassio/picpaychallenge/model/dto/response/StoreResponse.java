@@ -8,10 +8,12 @@ import org.springframework.hateoas.RepresentationModel;
 public class StoreResponse extends RepresentationModel<StoreResponse> {
     private String name;
     private String cnpj;
+    private Double balance;
 
     public StoreResponse responseOf(final Store store){
         this.name = store.getName();
         this.cnpj = store.getCnpj();
+        this.balance = store.getBalance();
 
         return this;
     }

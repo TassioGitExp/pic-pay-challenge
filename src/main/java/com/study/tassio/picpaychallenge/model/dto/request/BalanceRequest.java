@@ -11,5 +11,4 @@ public class BalanceRequest {
     String id;
     Double amount;
 
-
 }

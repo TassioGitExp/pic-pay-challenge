@@ -1,11 +1,9 @@
 package com.study.tassio.picpaychallenge.model.dto.request;
 
-import com.study.tassio.picpaychallenge.model.entities.Transaction;
 import com.study.tassio.picpaychallenge.model.entities.User;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 @Setter
@@ -33,7 +31,6 @@ public class UserRequest {
         user.setEmail(this.email);
         user.setPassword(this.password);
         user.setBalance(0.0);
-//        user.setTransactions(new ArrayList<Transaction>());
 
         return user;
     }
