@@ -1,17 +1,15 @@
 package com.study.tassio.picpaychallenge.model.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.study.tassio.picpaychallenge.model.dto.request.EmailRequest;
 import com.study.tassio.picpaychallenge.model.dto.request.TransactionRequest;
 import com.study.tassio.picpaychallenge.model.dto.response.TransactionResponse;
 import com.study.tassio.picpaychallenge.model.entities.Transaction;
-import com.study.tassio.picpaychallenge.model.entities.TransactionAuthorization;
 import com.study.tassio.picpaychallenge.model.repository.StoreRepository;
 import com.study.tassio.picpaychallenge.model.repository.TransactionRepository;
 import com.study.tassio.picpaychallenge.model.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Objects;
 
@@ -21,41 +19,33 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
+    private final TransactionAuthorizationService authorizationService;
+    private final EmailNotificationService emailService;
 
     public TransactionService(TransactionRepository transactionRepository,
                               UserRepository userRepository,
-                              StoreRepository storeRepository)
+                              StoreRepository storeRepository,
+                              TransactionAuthorizationService authorizationService, EmailNotificationService emailService)
     {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.storeRepository = storeRepository;
-    }
-
-    public String authorizeTransaction() throws JsonProcessingException {
-        String uri = "https://run.mocky.io/v3/5794d450-d2e2-4412-8131-73d0293ac1cc";
-        RestTemplate restTemplate = new RestTemplate();
-        ObjectMapper mapper = new ObjectMapper();
-
-        var authorizationString = restTemplate.getForObject(uri, String.class);
-
-        TransactionAuthorization authorizationMapped = mapper.readValue(authorizationString, TransactionAuthorization.class);
-
-        return authorizationMapped.getMessage();
+        this.authorizationService = authorizationService;
+        this.emailService = emailService;
     }
 
     public TransactionResponse makeTransaction(TransactionRequest transactionRequest, String userId){
-        String authorization = "";
+        Boolean authorization = false;
+
         try {
-            authorization = authorizeTransaction();
+            authorization = authorizationService.transactionAuthorization();
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
-        if (!Objects.equals(authorization, "Autorizado")) {
-            throw new RuntimeException("Transação: " + authorization + ".\nTente novamente mais tarde.");
+        if (!authorization) {
+            throw new RuntimeException("Transação não autorizada. Tente novamente mais tarde.");
         }
-
-        System.out.println(authorization);
 
         var user = userRepository.findById(transactionRequest.getUserId());
         System.out.println(user.toString());
@@ -90,6 +80,13 @@ public class TransactionService {
             System.out.println(store.toString());
 
             transactionRepository.save(transaction);
+
+            var email = new EmailRequest().writeEmail(
+                    user.get().getEmail(),
+                    store.get().getEmail(),
+                    "Transferencia para "+ store.get().getName() +" realizada com sucesso.");
+
+            emailService.sendEmailNotification(email);
         } else {
             throw new RuntimeException("Algo deu errado.");
         }
